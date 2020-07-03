@@ -145,12 +145,10 @@ import {
   deleteEvent,
   createEvent
 } from "../api/events-api";
-import Auth from "../auth/auth";
 
 export default {
   data: () => ({
     // added auth
-    auth: new Auth(),
     today: new Date().toISOString().substr(0, 10),
     focus: new Date().toISOString().substr(0, 10),
     type: "month",
@@ -171,10 +169,11 @@ export default {
     selectedOpen: false,
     events: [],
     dialog: false,
-    dialogDate: false
+    dialogDate: false,
+    accessToken: null
   }),
   mounted() {
-    this.getEvents();
+    this.getAccessToken();
   },
   computed: {
     title() {
@@ -209,8 +208,15 @@ export default {
     }
   },
   methods: {
+    async getAccessToken() {
+      const accessToken = await this.$auth.getTokenSilently();
+      this.accessToken = accessToken;
+      console.log("this is my token: ");
+      console.log(accessToken);
+      this.getEvents();
+    },
     async getEvents() {
-      let snapshot = await getEvents(this.auth.getIdToken());
+      let snapshot = await getEvents(this.accessToken);
       const events = [];
       snapshot.forEach(doc => {
         let appData = doc.data();
@@ -241,7 +247,7 @@ export default {
     },
     async addEvent() {
       if (this.name && this.start && this.end) {
-        await createEvent(this.auth.getIdToken(), {
+        await createEvent(this.accessToken, {
           name: this.name,
           details: this.details,
           start: this.start,
@@ -262,13 +268,13 @@ export default {
       this.currentlyEditing = ev.id;
     },
     async updateEvent(ev) {
-      await patchEvent(this.auth.getIdToken(), this.currentlyEditing, {
+      await patchEvent(this.accessToken, this.currentlyEditing, {
         details: ev.details
       });
       (this.selectedOpen = false), (this.currentlyEditing = null);
     },
     async deleteEvent(ev) {
-      await deleteEvent(this.auth.getIdToken(), ev.id);
+      await deleteEvent(this.accessToken, ev.id);
       (this.selectedOpen = false), this.getEvents();
     },
     showEvent({ nativeEvent, event }) {
