@@ -27,7 +27,7 @@ provider:
     EVENTS_TABLE: Events-tonyli-${self:provider.stage}
     IMAGES_S3_BUCKET: serverless-chenhaoli-event-images-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
-    AUTH_0_SECRET: p8YelCpS7eovV2nTFCyfRmKjoDuH62HEKten8TyKVCJ-upg0uUSsMVg_zbtmPOWq
+    AUTH_0_SECRET: 5mWJ1pu6sjsT9ez4WjSPW2g4BaAja5IH-qCfqW0NnhHYm_bKVJ7GhaK4rNSfrArN
     INDEX_NAME: EventIdIndex
 
 custom:
