@@ -7,31 +7,31 @@ const XAWS = AWSXRay.captureAWS(AWS)
 
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 
-import { TodoItem } from '../models/todoItem'
-import { TodoUpdate } from '../models/todoUpdate'
+import { EventItem } from '../models/eventItem'
+import { EventUpdate } from '../models/eventUpdate'
 import { createLogger } from '../utils/logger'
 const s3 = new XAWS.S3({
     signatureVersion: 'v4'
 })
 
 const urlExpiration = process.env.SIGNED_URL_EXPIRATION
-const logger = createLogger('createTodo')
+const logger = createLogger('createEvent')
 
 export class Data {
 
     constructor(
         private readonly docClient: DocumentClient = createDynamoDBClient(),
-        private readonly todosTable = process.env.TODOS_TABLE,
+        private readonly eventsTable = process.env.EVENTS_TABLE,
         private readonly bucketName = process.env.IMAGES_S3_BUCKET,
 
     ) {
     }
 
-    async getTodos(userId: string): Promise<TodoItem[]> {
+    async getEvents(userId: string): Promise<EventItem[]> {
         //const todoIndex = process.env.INDEX_NAME
 
         const result = await this.docClient.query({
-            TableName: this.todosTable,
+            TableName: this.eventsTable,
             KeyConditionExpression: 'userId = :userId',
             ExpressionAttributeValues: {
                 ':userId': userId
@@ -39,33 +39,33 @@ export class Data {
         }).promise()
 
 
-        logger.info("Todo's retrieved successfully")
+        logger.info("Event's retrieved successfully")
 
         const items = result.Items
-        return items as TodoItem[]
+        return items as EventItem[]
     }
 
-    async createTodo(todoItem: TodoItem): Promise<TodoItem> {
+    async createEvent(eventItem: EventItem): Promise<EventItem> {
         await this.docClient.put({
-            TableName: this.todosTable,
-            Item: todoItem
+            TableName: this.eventsTable,
+            Item: eventItem
         }).promise()
 
-        return todoItem
+        return eventItem
     }
 
-    async updateTodo(userId: string, todoId: string, todoUpdate: TodoUpdate): Promise<TodoUpdate> {
+    async updateEvent(userId: string, eventId: string, eventUpdate: EventUpdate): Promise<EventUpdate> {
         var params = {
-            TableName: this.todosTable,
+            TableName: this.eventsTable,
             Key: {
                 userId: userId,
-                todoId: todoId
+                eventId: eventId
             },
-            UpdateExpression: "set #n = :r, dueDate=:p, done=:a",
+            UpdateExpression: "set #n = :r, start=:p, end=:a",
             ExpressionAttributeValues: {
-                ":r": todoUpdate.name,
-                ":p": todoUpdate.dueDate,
-                ":a": todoUpdate.done
+                ":r": eventUpdate.name,
+                ":p": eventUpdate.start,
+                ":a": eventUpdate.end
             },
             ExpressionAttributeNames: {
                 "#n": "name"
@@ -75,18 +75,18 @@ export class Data {
 
         await this.docClient.update(params).promise()
         logger.info("Update was successful")
-        return todoUpdate
+        return eventUpdate
 
     }
 
 
 
-    async deleteTodo(userId: string, todoId: string): Promise<String> {
+    async deleteEvent(userId: string, eventId: string): Promise<String> {
         await this.docClient.delete({
-            TableName: this.todosTable,
+            TableName: this.eventsTable,
             Key: {
                 userId: userId,
-                todoId: todoId
+                eventId: eventId
             }
         }).promise()
         
@@ -96,16 +96,16 @@ export class Data {
 
     }
 
-    async generateUploadUrl(userId: string, todoId: string): Promise<String> {
-        const url = getUploadUrl(todoId, this.bucketName)
+    async generateUploadUrl(userId: string, eventId: string): Promise<String> {
+        const url = getUploadUrl(eventId, this.bucketName)
 
-        const attachmentUrl: string = 'https://' + this.bucketName + '.s3.amazonaws.com/' + todoId
+        const attachmentUrl: string = 'https://' + this.bucketName + '.s3.amazonaws.com/' + eventId
 
         const options = {
-            TableName: this.todosTable,
+            TableName: this.eventsTable,
             Key: {
                 userId: userId,
-                todoId: todoId
+                eventId: eventId
             },
             UpdateExpression: "set attachmentUrl = :r",
             ExpressionAttributeValues: {
@@ -123,10 +123,10 @@ export class Data {
 }
 
 
-function getUploadUrl(todoId: string, bucketName: string): string {
+function getUploadUrl(eventId: string, bucketName: string): string {
     return s3.getSignedUrl('putObject', {
         Bucket: bucketName,
-        Key: todoId,
+        Key: eventId,
         Expires: parseInt(urlExpiration)
     })
 }

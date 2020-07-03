@@ -1,11 +1,11 @@
 import { APIGatewayProxyHandler, APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import { getUserId } from '../util'
-import { todoExists } from '../../logicLayer/todo'
+import { eventExists } from '../../logicLayer/event'
 import { createLogger } from '../../utils/logger'
-import { generateUploadUrl } from '../../logicLayer/todo'
+import { generateUploadUrl } from '../../logicLayer/event'
 import 'source-map-support/register'
 
-const logger = createLogger('Todo')
+const logger = createLogger('Event')
 
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -13,19 +13,19 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   logger.info("processing event ", event)
   const userId = getUserId(event)
 
-  const todoId = event.pathParameters.todoId
-  const validTodoId = await todoExists(userId, todoId)
+  const eventId = event.pathParameters.eventId
+  const validEventId = await eventExists(userId, eventId)
   
-  if (!validTodoId) {
+  if (!validEventId) {
     return {
       statusCode: 404,
       body: JSON.stringify({
-        error: 'Todo item does not exist'
+        error: 'Event item does not exist'
       })
     }
   }
 
-  let url = await generateUploadUrl(userId, todoId)
+  let url = await generateUploadUrl(userId, eventId)
 
   return {
     statusCode: 201,

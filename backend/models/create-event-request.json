@@ -3,21 +3,32 @@
   "title": "todo",
   "type": "object",
   "properties": {
+    "createdAt": {
+      "type": "string"
+    },
+    "details": {
+      "type": "string"
+    },
     "name": {
       "type": "string"
     },
-    "dueDate": {
+    "start": {
       "type": "string"
     },
-    "done": {
-      "type": "boolean"
+    "end": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string"
     },
     "attachmentUrl": {
       "type": "string"
     }
   },
   "required": [
-    "name"
+    "name",
+    "start",
+    "end"
   ],
   "additionalProperties": false
 }

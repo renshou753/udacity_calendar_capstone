@@ -1,4 +1,4 @@
-# uda_diary
+# uda_calendar
 
 ## Project setup
 ```
