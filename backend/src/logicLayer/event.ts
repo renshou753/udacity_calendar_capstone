@@ -56,9 +56,7 @@ export async function updateEvent(
 ): Promise<EventUpdate> {
 
     const updatedEvent: EventUpdate = {
-        name: updateEventRequest.name,
-        start: updateEventRequest.start,
-        end: updateEventRequest.end
+        details: updateEventRequest.details
     }
 
     return await data.updateEvent(userId, eventId, updatedEvent)

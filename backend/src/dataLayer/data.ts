@@ -61,14 +61,9 @@ export class Data {
                 userId: userId,
                 eventId: eventId
             },
-            UpdateExpression: "set #n = :r, start=:p, end=:a",
+            UpdateExpression: "set details=:q",
             ExpressionAttributeValues: {
-                ":r": eventUpdate.name,
-                ":p": eventUpdate.start,
-                ":a": eventUpdate.end
-            },
-            ExpressionAttributeNames: {
-                "#n": "name"
+                ":q": eventUpdate.details
             },
             ReturnValues: "UPDATED_NEW"
         };
