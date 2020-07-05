@@ -102,7 +102,7 @@
         >
           <v-card color="grey lighten-4" :width="350" flat>
             <v-toolbar :color="selectedEvent.color" dark>
-              <v-btn @click="deleteEvent(selectedEvent.id)" icon>
+              <v-btn @click="deleteEvent(selectedEvent)" icon>
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
               <v-toolbar-title v-html="selectedEvent.name"></v-toolbar-title>
@@ -170,7 +170,8 @@ export default {
     events: [],
     dialog: false,
     dialogDate: false,
-    accessToken: null
+    accessToken: null,
+    idToken: null
   }),
   mounted() {
     this.getAccessToken();
@@ -209,18 +210,23 @@ export default {
   },
   methods: {
     async getAccessToken() {
+      const idTokenObj = await this.$auth.getIdTokenClaims();
+      const idToken = idTokenObj.__raw;
       const accessToken = await this.$auth.getTokenSilently();
       this.accessToken = accessToken;
-      console.log("this is my token: ");
+      this.idToken = idToken;
+      console.log("this is my access token: ");
       console.log(accessToken);
+      console.log("this is my id token: ");
+      console.log(idToken);
       this.getEvents();
     },
     async getEvents() {
-      let snapshot = await getEvents(this.accessToken);
+      let snapshot = await getEvents(this.idToken);
       const events = [];
       snapshot.forEach(doc => {
-        let appData = doc.data();
-        appData.id = doc.id;
+        let appData = doc;
+        appData.id = doc.eventId;
         events.push(appData);
       });
       this.events = events;
@@ -247,7 +253,7 @@ export default {
     },
     async addEvent() {
       if (this.name && this.start && this.end) {
-        await createEvent(this.accessToken, {
+        await createEvent(this.idToken, {
           name: this.name,
           details: this.details,
           start: this.start,
@@ -268,13 +274,13 @@ export default {
       this.currentlyEditing = ev.id;
     },
     async updateEvent(ev) {
-      await patchEvent(this.accessToken, this.currentlyEditing, {
+      await patchEvent(this.idToken, this.currentlyEditing, {
         details: ev.details
       });
       (this.selectedOpen = false), (this.currentlyEditing = null);
     },
     async deleteEvent(ev) {
-      await deleteEvent(this.accessToken, ev.id);
+      await deleteEvent(this.idToken, ev.id);
       (this.selectedOpen = false), this.getEvents();
     },
     showEvent({ nativeEvent, event }) {
