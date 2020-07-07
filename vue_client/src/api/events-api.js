@@ -42,3 +42,17 @@ export async function deleteEvent(idToken, eventId) {
     }
   })
 }
+
+export async function getUploadUrl(idToken, eventId) {
+  const response = await Axios.post(`${apiEndpoint}/events/${eventId}/attachment`, '', {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    }
+  })
+  return response.data.uploadUrl
+}
+
+export async function uploadFile(uploadUrl, file) {
+  await Axios.put(uploadUrl, file)
+}

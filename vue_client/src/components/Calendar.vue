@@ -109,6 +109,10 @@
               <div class="flex-grow-1"></div>
             </v-toolbar>
 
+            <v-col cols="auto">
+              <v-img height="200" width="200" v-bind:src="selectedEvent.attachmentUrl"></v-img>
+            </v-col>
+
             <v-card-text>
               <form v-if="currentlyEditing !== selectedEvent.id">{{ selectedEvent.details }}</form>
               <form v-else>
@@ -119,6 +123,7 @@
                   :min-height="100"
                   placeholder="add note"
                 ></textarea-autosize>
+                <v-file-input accept="image/*" label="Image Upload" v-model="fileBuffer"></v-file-input>
               </form>
             </v-card-text>
 
@@ -143,7 +148,9 @@ import {
   getEvents,
   patchEvent,
   deleteEvent,
-  createEvent
+  createEvent,
+  getUploadUrl,
+  uploadFile
 } from "../api/events-api";
 
 export default {
@@ -171,7 +178,8 @@ export default {
     dialog: false,
     dialogDate: false,
     accessToken: null,
-    idToken: null
+    idToken: null,
+    fileBuffer: null
   }),
   mounted() {
     this.getAccessToken();
@@ -274,6 +282,9 @@ export default {
       this.currentlyEditing = ev.id;
     },
     async updateEvent(ev) {
+      const uploadUrl = await getUploadUrl(this.idToken, ev.id);
+      await uploadFile(uploadUrl, this.fileBuffer);
+
       await patchEvent(this.idToken, this.currentlyEditing, {
         details: ev.details
       });
