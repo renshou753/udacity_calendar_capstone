@@ -2,7 +2,6 @@
   <div class="nav-container mb-3">
     <nav class="navbar navbar-expand-md navbar-light bg-light">
       <div class="container">
-        <div class="navbar-brand logo"></div>
         <button
           class="navbar-toggler"
           type="button"
